@@ -25,7 +25,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
-//pradeep singh
+//pradeep Singh
 public class home extends Activity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks,SensorEventListener {
 
