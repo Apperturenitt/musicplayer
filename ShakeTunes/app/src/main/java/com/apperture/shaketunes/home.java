@@ -32,6 +32,7 @@ public class home extends Activity
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
      */
+    //pradeep
     SensorManager sm;
     Sensor proxSensor,acc;
     private NavigationDrawerFragment mNavigationDrawerFragment;
