@@ -6,6 +6,9 @@ import android.app.ActionBar;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -17,14 +20,20 @@ import android.view.ViewGroup;
 import android.support.v4.widget.DrawerLayout;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 
 
 public class home extends Activity
-        implements NavigationDrawerFragment.NavigationDrawerCallbacks {
+        implements NavigationDrawerFragment.NavigationDrawerCallbacks,SensorEventListener {
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
      */
+    SensorManager sm;
+    Sensor proxSensor,acc;
     private NavigationDrawerFragment mNavigationDrawerFragment;
 
     /**
@@ -40,6 +49,11 @@ public class home extends Activity
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getFragmentManager().findFragmentById(R.id.navigation_drawer);
         mTitle = getTitle();
+
+        sm=(SensorManager)getSystemService(SENSOR_SERVICE);
+        proxSensor=sm.getDefaultSensor(Sensor.TYPE_PROXIMITY);
+
+        acc=sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
         // Set up the drawer.
         mNavigationDrawerFragment.setUp(
@@ -70,6 +84,20 @@ public class home extends Activity
         }
     }
 
+    public void sensor_Trigger (boolean set)//true sets acclrometr and proximity on and opp on false
+    {
+        if(set)
+        {
+            sm.registerListener(this, proxSensor, SensorManager.SENSOR_DELAY_NORMAL);
+            sm.registerListener(this, acc, SensorManager.SENSOR_DELAY_NORMAL);
+        }
+
+        else{
+            sm.unregisterListener(this, proxSensor);
+            sm.unregisterListener(this,acc);
+        }
+
+    }
     public void restoreActionBar() {
         ActionBar actionBar = getActionBar();
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
@@ -101,6 +129,40 @@ public class home extends Activity
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+///////////////////////////////////////////////////////////////////////////////////////////
+        /*
+        // TODO Auto-generated method stub
+        if(event.sensor.getName().toString().contains("Acc"))//when accelerometer is is called
+        {if(event.values[0]*event.values[0]+event.values[1]*event.values[1]+event.values[2]*event.values[2] >125)
+        {if(event.values[0]<-3){next(view2);SystemClock.sleep(40);}
+        else if(event.values[0]>3){prev(view2);SystemClock.sleep(40);}
+
+        }
+        }
+
+
+        else//when
+        {if(event.values[0]==0)
+            play(view2);
+            SystemClock.sleep(25);
+        }
+        try{Text1.setText(event.sensor.getName().toString());
+            Text2.setText("X: "+String.valueOf(event.values[0])+
+                    "\nY: "+String.valueOf(event.values[1])
+                    +"\nZ: "+String.valueOf(event.values[2]));
+        }catch(Exception e)
+        {
+            // TODO Auto-generated method stub
+        }*//////////////////////////////////////////////////////////////////////////////////////////////
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
     }
 
     /**
