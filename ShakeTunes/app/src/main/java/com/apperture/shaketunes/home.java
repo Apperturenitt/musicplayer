@@ -40,6 +40,7 @@ public class home extends Activity
     /**
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
      */
+    //
     private CharSequence mTitle;
 
     @Override
