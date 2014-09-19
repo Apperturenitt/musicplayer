@@ -2,6 +2,10 @@ package com.apperture.shaketunes;
 
 import android.app.Activity;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
 import android.app.ActionBar;
 import android.app.Fragment;
 import android.app.FragmentManager;
@@ -11,6 +15,8 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -24,6 +30,18 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+
+
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.BasicResponseHandler;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+
 
 //Pradeep Singh
 public class home extends Activity
@@ -61,7 +79,10 @@ public class home extends Activity
         mNavigationDrawerFragment.setUp(
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
+
+        updateCheck();
     }
+
 
     @Override
     public void onNavigationDrawerItemSelected(int position) {
@@ -162,6 +183,97 @@ public class home extends Activity
         }*//////////////////////////////////////////////////////////////////////////////////////////////
     }
 
+
+    public void updateCheck()
+    {
+        //
+        new Thread() {
+            @Override
+            public void run() {
+
+
+                // Create a new HttpClient and Post Header
+                HttpClient httpclient = new DefaultHttpClient();
+                HttpPost httppost = new HttpPost("http://destroyer/apperture/music/index.php");
+                String myVersion = android.os.Build.VERSION.RELEASE;
+                String android_id = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+                String response="";
+
+                //This is the data to send
+                String MyName =" " ; //any data to send
+
+                try {
+                    // Add your data
+                    List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
+                    nameValuePairs.add(new BasicNameValuePair("appKey", "paacApperture1112368"));
+                    nameValuePairs.add(new BasicNameValuePair("appVersion", "1.1"));
+                    nameValuePairs.add(new BasicNameValuePair("androidVersion", myVersion));
+                    nameValuePairs.add(new BasicNameValuePair("mobID", android_id));
+                    //nameValuePairs.add(new BasicNameValuePair("samples", Samples));
+                    //nameValuePairs.add(new BasicNameValuePair("amount", Amount));
+                    //nameValuePairs.add(new BasicNameValuePair("collected", Recieved));
+                    try {
+                        httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    }
+
+                    // Execute HTTP Post Request
+
+                    ResponseHandler<String> responseHandler = new BasicResponseHandler();
+
+                    try {
+                        response = httpclient.execute(httppost, responseHandler);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    //This is the response from a php application
+                    //String reverseString = response;
+                    //msg.setText(reverseString);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            //response="Saved";
+                            //display("Saved");
+                            //setclr(green);
+                        }
+                    });
+
+                    Log.d("post", " response" + response);
+                    //Toast.makeText(this, "response" + reverseString, Toast.LENGTH_LONG).show();
+
+                } /*catch (ClientProtocolException e) {
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            //display("\nCheck server settings");
+                        }
+                    });
+                    //msg.setText("cpe" +e.toString());
+                    Log.d("post error", "cpe response"+e.toString());
+                    //Toast.makeText(this, "CPE response " + e.toString(), Toast.LENGTH_LONG).show();
+                    // TODO Auto-generated catch block
+                } */catch (Exception e) {
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            //display(""+"\nCan't connect to server!");
+                        }
+                    });
+                    //msg.setText("ioe" +e.toString());
+                    Log.d("post error", "IOE response"+e.toString());
+                    //Toast.makeText(this, "IOE response " + e.toString(), Toast.LENGTH_LONG).show();
+                    // TODO Auto-generated catch block
+                }
+
+
+            }
+        }.start();
+
+    }
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
