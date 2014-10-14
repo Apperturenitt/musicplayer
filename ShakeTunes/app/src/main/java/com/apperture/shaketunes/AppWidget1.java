@@ -81,7 +81,7 @@ public class AppWidget1 extends AppWidgetProvider  implements SensorEventListene
 
     static void updateAppWidget(Context context, AppWidgetManager appWidgetManager,
             int appWidgetId) {
-
+        Log.d("update","update");
         CharSequence widgetText = AppWidget1ConfigureActivity.loadTitlePref(context, appWidgetId);
         // Construct the RemoteViews object
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.app_widget1);
