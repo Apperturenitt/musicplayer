@@ -2,7 +2,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="@dimen/widget_margin"
-    android:background="#09C" >
+    android:background="#90111111" >
 
     <TextView
         android:id="@+id/appwidget_text"
@@ -16,6 +16,43 @@
         android:textStyle="bold|italic"
         android:layout_margin="8dp"
         android:contentDescription="@string/appwidget_text"
-        android:background="#09C"/>
+        />
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/prev"
+        android:focusable="true"
+        android:src="@drawable/play"
+        android:onClick="prev"
+        android:layout_alignTop="@+id/play"
+        android:layout_toLeftOf="@+id/appwidget_text"
+        android:layout_toStartOf="@+id/appwidget_text" />
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/next"
+        android:focusable="true"
+        android:src="@drawable/play"
+        android:onClick="next"
+        android:layout_toEndOf="@+id/appwidget_text"
+        android:contentDescription="play"
+        android:layout_alignTop="@+id/play"
+        android:layout_toRightOf="@+id/appwidget_text" />
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/play"
+        android:focusable="true"
+        android:src="@drawable/play"
+        android:onClick="play"
+        android:layout_toEndOf="@+id/prev"
+        android:contentDescription="prev"
+        android:layout_below="@+id/appwidget_text"
+        android:layout_toLeftOf="@+id/next"
+        android:layout_toStartOf="@+id/next"
+        android:clickable="true" />
 
 </RelativeLayout>

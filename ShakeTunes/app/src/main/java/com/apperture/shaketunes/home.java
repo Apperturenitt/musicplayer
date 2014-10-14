@@ -84,6 +84,8 @@ public class home extends Activity
     }
 
 
+
+
     @Override
     public void onNavigationDrawerItemSelected(int position) {
         // update the main content by replacing fragments
@@ -121,6 +123,7 @@ public class home extends Activity
         }
 
     }
+
     public void restoreActionBar() {
         ActionBar actionBar = getActionBar();
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
