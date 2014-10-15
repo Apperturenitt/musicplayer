@@ -43,6 +43,7 @@
                 android:layout_alignParentLeft="true"
                 android:layout_alignParentStart="true"
                 android:src="@drawable/pause"
+                android:layout_weight="1"
                 android:layout_gravity="center_horizontal"
                 android:clickable="true"/>
 
@@ -54,7 +55,7 @@
                 android:id="@+id/imageButton"
                 android:src="@drawable/play"
 
-
+                android:layout_weight="1"
                 android:layout_alignParentLeft="true"
                 android:layout_alignParentStart="true"
                 android:layout_gravity="center_horizontal"
@@ -68,6 +69,7 @@
                 android:layout_alignParentStart="true"
                 android:layout_gravity="left"
                 android:src="@drawable/next"
+                android:layout_weight="1"
                 android:clickable="true"/>
         </LinearLayout>
     </LinearLayout>

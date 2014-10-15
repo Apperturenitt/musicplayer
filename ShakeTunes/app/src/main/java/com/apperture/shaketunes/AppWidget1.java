@@ -1,5 +1,6 @@
 package com.apperture.shaketunes;
-
+import com.parse.Parse;
+import com.parse.ParseAnalytics;
 import android.app.Activity;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
@@ -48,6 +49,7 @@ public class AppWidget1 extends AppWidgetProvider  implements SensorEventListene
     public void onEnabled(Context context) {
       //  uiHelper = new UiLifecycleHelper(this, callback);
         Log.d("Set sensor"," Set started");
+
         sm=(SensorManager)context.getSystemService(Context.SENSOR_SERVICE);
 
         proxSensor=sm.getDefaultSensor(Sensor.TYPE_PROXIMITY);
@@ -86,6 +88,7 @@ public class AppWidget1 extends AppWidgetProvider  implements SensorEventListene
         // Construct the RemoteViews object
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.app_widget1);
         views.setTextViewText(R.id.appwidget_text, widgetText);
+     //   remoteViews.setOnClickPendingIntent(R.id.widget_button, buildButtonPendingIntent(context));
 
         // Instruct the widget manager to update the widget
         appWidgetManager.updateAppWidget(appWidgetId, views);

@@ -1,7 +1,8 @@
 package com.apperture.shaketunes;
 
 import android.app.Activity;
-
+import com.parse.ParseInstallation;
+import com.parse.PushService;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -32,6 +33,8 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
 
+import com.parse.Parse;
+
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
@@ -41,7 +44,9 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
-
+import com.parse.Parse;
+import com.parse.ParseAnalytics;
+import com.parse.ParseObject;
 
 //Pradeep Singh
 public class home extends Activity
@@ -66,6 +71,8 @@ public class home extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
+        ParseAnalytics.trackAppOpened(getIntent());
+
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getFragmentManager().findFragmentById(R.id.navigation_drawer);
         mTitle = getTitle();
@@ -80,7 +87,7 @@ public class home extends Activity
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
 
-        updateCheck();
+       // updateCheck();
     }
 
 
