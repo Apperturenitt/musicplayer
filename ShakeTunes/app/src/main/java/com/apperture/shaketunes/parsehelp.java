@@ -24,7 +24,11 @@ public void onCreate() {
     Parse.initialize(this, "8GKfgGBxjrjrA4RONYy5akGu2aqqRLZfb0T0dXX1", "sU4luC7WK8kq2bWsFhlIw6GYtdFbBXTq472RshCE");
 
     ParseInstallation.getCurrentInstallation().saveInBackground();
-    Log.d("parse",  ParseInstallation.getCurrentInstallation().toString());
+    if(ParseInstallation.getCurrentInstallation().containsKey("id"))
+    Log.d("parse",  ParseInstallation.getCurrentInstallation().getString("id"));
+    else Log.d("parse",  "not found id");
+
+    //ParseInstallation.getCurrentInstallation()
         // Specify an Activity to handle all pushes by default.
         PushService.setDefaultPushCallback(this, home.class);
         }

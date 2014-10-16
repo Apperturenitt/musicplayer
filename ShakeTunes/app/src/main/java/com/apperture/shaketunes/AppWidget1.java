@@ -2,9 +2,11 @@ package com.apperture.shaketunes;
 import com.parse.Parse;
 import com.parse.ParseAnalytics;
 import android.app.Activity;
+import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -14,8 +16,13 @@ import android.os.SystemClock;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.RemoteViews;
 import android.content.ContextWrapper;
+import android.widget.Toast;
+import java.lang.Exception;
+
+import static android.content.Context.*;
 // Pradeep Singh
 
 /**
@@ -24,14 +31,62 @@ import android.content.ContextWrapper;
  */
 public class AppWidget1 extends AppWidgetProvider  implements SensorEventListener {
     SensorManager sm;
+    ImageButton button;
+    boolean CurrTrigstate=false;
     Sensor proxSensor,acc;
-    ContextWrapper temp=null;
+   // ContextWrapper temp=new ContextWrapper(this);
+    public static final String TOAST_ACTION = "com.com.apperture.shaketune.TOAST_ACTION";
+    public static final String EXTRA_ITEM = "com.com.apperture.shaketune.EXTRA_ITEM";
+    private static final String Play= "Play";
+    private static final String Prev = "Prev";
+    private static final String Next= "next";
+    private static final String SensorTrigger="SensorTrigger";
+
+    Context c;AppWidgetManager awm;int[] I;
     long eventtime = SystemClock.uptimeMillis();
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
+
+        try {
+            c = context;
+
+            awm = appWidgetManager;
+            I = appWidgetIds;
+        }catch(Exception e){
+            Log.d("Error in onupdate",e.getMessage().toString());
+        }
         // There may be multiple widgets active, so update all of them
         final int N = appWidgetIds.length;
         for (int i=0; i<N; i++) {
+            RemoteViews rv = new RemoteViews(context.getPackageName(), R.layout.app_widget1);
+            /*Intent PlayIntent,PrevIntent,NextIntent;
+           PlayIntent= new Intent(this,AppWidget1.class);
+            PlayIntent.putExtra("play", "play");*/
+
+                    rv.setOnClickPendingIntent(R.id.play, PendingIntent.getBroadcast(context, 0,
+                            new Intent(context, AppWidget1.class)
+                                    .setAction(Play),
+                            PendingIntent.FLAG_UPDATE_CURRENT));
+            Log.d("update","Play set");
+            rv.setOnClickPendingIntent(R.id.prev, PendingIntent.getBroadcast(context, 0,
+                    new Intent(context, AppWidget1.class)
+                            .setAction(Prev),
+                    PendingIntent.FLAG_UPDATE_CURRENT));
+            Log.d("update","pREV set");
+            rv.setOnClickPendingIntent(R.id.next, PendingIntent.getBroadcast(context, 0,
+                    new Intent(context, AppWidget1.class)
+                            .setAction(Next),
+                    PendingIntent.FLAG_UPDATE_CURRENT));
+            Log.d("update","Next set");
+
+            rv.setOnClickPendingIntent(R.id.trigger, PendingIntent.getBroadcast(context, 0,
+                    new Intent(context, AppWidget1.class)
+                            .setAction(SensorTrigger),
+                    PendingIntent.FLAG_UPDATE_CURRENT));
+            Log.d("update", "Trigger set");
+
+
+            appWidgetManager.updateAppWidget(appWidgetIds[i], rv);
             updateAppWidget(context, appWidgetManager, appWidgetIds[i]);
         }
     }
@@ -44,13 +99,27 @@ public class AppWidget1 extends AppWidgetProvider  implements SensorEventListene
             AppWidget1ConfigureActivity.deleteTitlePref(context, appWidgetIds[i]);
         }
     }
+    public void onReceive(Context context, Intent intent) {
+        //ContextWrapper temp=new ContextWrapper(context);
+        super.onReceive(context, intent);
+        String action = intent.getAction();
+        View view=null;
+        Log.d("Onrecieve",action);
+        if (Play.equals(action)) play(view,context);
+        else if (Prev.equals(action)) prev(view,context);
+        else if (Next.equals(action)) next(view,context);
+        else if(SensorTrigger.equals(action))sensor_Trigger(!CurrTrigstate);
+
+
+    }
 
     @Override
     public void onEnabled(Context context) {
       //  uiHelper = new UiLifecycleHelper(this, callback);
         Log.d("Set sensor"," Set started");
 
-        sm=(SensorManager)context.getSystemService(Context.SENSOR_SERVICE);
+
+        sm=(SensorManager)context.getSystemService(SENSOR_SERVICE);
 
         proxSensor=sm.getDefaultSensor(Sensor.TYPE_PROXIMITY);
 
@@ -61,8 +130,9 @@ public class AppWidget1 extends AppWidgetProvider  implements SensorEventListene
 
     public void sensor_Trigger (boolean set)//true sets acclrometr and proximity on and opp on false
     {Log.d("Sensor switch","Started fn");
+
         if(set)
-        {
+        {//button=(ImageButton)findViewById(R.id.trigger);
             sm.registerListener(this, proxSensor, SensorManager.SENSOR_DELAY_NORMAL);
             sm.registerListener(this, acc, SensorManager.SENSOR_DELAY_NORMAL);
             Log.d("Sensor switch","Started");
@@ -73,11 +143,14 @@ public class AppWidget1 extends AppWidgetProvider  implements SensorEventListene
             sm.unregisterListener(this,acc);
             Log.d("Sensor switch","stopped");
         }
+        CurrTrigstate=set;
 
     }
 
+
     @Override
     public void onDisabled(Context context) {
+        sensor_Trigger(false);
         // Enter relevant functionality for when the last widget is disabled
     }
 
@@ -94,42 +167,43 @@ public class AppWidget1 extends AppWidgetProvider  implements SensorEventListene
         appWidgetManager.updateAppWidget(appWidgetId, views);
     }
 
-    public void play(View view){
+    public void play(View view,Context context){
         View view1=null;
-        pause(view1);
+
+        pause(view1,context);
         Intent downIntent = new Intent(Intent.ACTION_MEDIA_BUTTON, null);
         KeyEvent downEvent = new KeyEvent(eventtime, eventtime, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, 0);
         downIntent.putExtra(Intent.EXTRA_KEY_EVENT, downEvent);
         //functions temp = null;
-        temp.sendOrderedBroadcast(downIntent, null);
+       context.sendOrderedBroadcast(downIntent, null);
 
     }
 
 
-    public void pause(View view){
+    public void pause(View view,Context context){
         Intent upIntent = new Intent(Intent.ACTION_MEDIA_BUTTON, null);
         KeyEvent upEvent = new KeyEvent(eventtime, eventtime, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, 0);
         upIntent.putExtra(Intent.EXTRA_KEY_EVENT, upEvent);
-        temp.sendOrderedBroadcast(upIntent, null);
+       context.sendOrderedBroadcast(upIntent, null);
     }
     /*NEXT*/
-    public void next(View view){
+    public void next(View view,Context context){
         View view1=null;
-        pause(view1);
+        pause(view1,context);
         Intent downIntent = new Intent(Intent.ACTION_MEDIA_BUTTON, null);
         KeyEvent downEvent = new KeyEvent(eventtime, eventtime, KeyEvent.ACTION_DOWN,   KeyEvent.KEYCODE_MEDIA_NEXT, 0);
         downIntent.putExtra(Intent.EXTRA_KEY_EVENT, downEvent);
-        temp.sendOrderedBroadcast(downIntent, null);
+        context.sendOrderedBroadcast(downIntent, null);
     }
 
     /*PREVIOUS*/
-    public void prev(View view){
+    public void prev(View view,Context context){
         View view1=null;
-        pause(view1);
+        pause(view1,context);
         Intent downIntent = new Intent(Intent.ACTION_MEDIA_BUTTON, null);
         KeyEvent downEvent = new KeyEvent(eventtime, eventtime, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PREVIOUS, 0);
         downIntent.putExtra(Intent.EXTRA_KEY_EVENT, downEvent);
-        temp.sendOrderedBroadcast(downIntent, null);
+        context.sendOrderedBroadcast(downIntent, null);
     }
 
 
@@ -150,6 +224,32 @@ public class AppWidget1 extends AppWidgetProvider  implements SensorEventListene
      */
     @Override
     public void onSensorChanged(SensorEvent event) {
+View view2=null;
+        if(event.sensor.getName().toString().contains("Acc"))
+        {if(event.values[0]*event.values[0]+event.values[1]*event.values[1]+event.values[2]*event.values[2] >125)
+        {if(event.values[0]<-3){next(view2,c);SystemClock.sleep(40);}
+        else if(event.values[0]>3){prev(view2,c);SystemClock.sleep(40);}
+
+        }
+        }
+
+
+        else
+        {if(event.values[0]==0)
+            play(view2,c);
+            SystemClock.sleep(25);
+        }/*
+        try{Text1.setText(event.sensor.getName().toString());
+            Text2.setText("X: "+String.valueOf(event.values[0])+
+                    "\nY: "+String.valueOf(event.values[1])
+                    +"\nZ: "+String.valueOf(event.values[2]));
+        }catch(Exception e)
+        {
+            // TODO Auto-generated method stub
+        }*/
+
+
+
 
     }
 

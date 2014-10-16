@@ -11,14 +11,17 @@ import android.app.ActionBar;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
+import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -51,7 +54,7 @@ import com.parse.ParseObject;
 //Pradeep Singh
 public class home extends Activity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks,SensorEventListener {
-
+    long eventtime = SystemClock.uptimeMillis();
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
      */
@@ -289,6 +292,14 @@ public class home extends Activity
 
     }
 
+    public void play(View view){
+        View view1=null;
+       // pause(view1);
+        Intent downIntent = new Intent(Intent.ACTION_MEDIA_BUTTON, null);
+        KeyEvent downEvent = new KeyEvent(eventtime, eventtime, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, 0);
+        downIntent.putExtra(Intent.EXTRA_KEY_EVENT, downEvent);
+        sendOrderedBroadcast(downIntent, null);
+    }
     /**
      * A placeholder fragment containing a simple view.
      */
