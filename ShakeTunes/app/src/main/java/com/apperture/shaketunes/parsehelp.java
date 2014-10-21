@@ -4,6 +4,7 @@ package com.apperture.shaketunes;
  * Created by Pradeep on 15-10-2014.
  */
 
+import android.content.Context;
 import android.util.Log;
 
 import com.parse.Parse;
@@ -11,12 +12,18 @@ import com.parse.ParseInstallation;
 import com.parse.ParseObject;
 import com.parse.PushService;
 public class parsehelp extends android.app.Application {
-
+    private static parsehelp instance = null;
 public parsehelp() {
+    instance = this;
         }
+    public static Context getInstance()
+    {
+        if (instance == null) instance = new parsehelp();
 
+        return instance;
+    }
 @Override
-public void onCreate() {
+public void onCreate() {instance=this;
         super.onCreate();
 
         // Initialize the Parse SDK.
