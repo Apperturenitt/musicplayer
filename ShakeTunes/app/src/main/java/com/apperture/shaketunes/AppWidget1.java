@@ -22,6 +22,8 @@ import android.content.ContextWrapper;
 import android.widget.Toast;
 import java.lang.Exception;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import static android.content.Context.*;
 // Pradeep Singh
 
@@ -48,7 +50,10 @@ public class AppWidget1 extends AppWidgetProvider implements SensorEventListener
     public static int flag2=0;
     public static Context c;AppWidgetManager awm;int[] I;
     long eventtime = SystemClock.uptimeMillis();
-    public static float[] gravity={0,0,0},linear_acceleration={0,0,0};
+    public static float[] gravity={0,0,0};
+    public static double mLastX=0,mLastY=0,mLastZ=0;
+    public static boolean mInitialized=false;
+    private final float NOISE = (float) 10.0;
 
 
     SensorEventListener myListner = new SensorEventListener() {
@@ -114,6 +119,8 @@ public class AppWidget1 extends AppWidgetProvider implements SensorEventListener
     }
     public void onReceive(Context context, Intent intent) {
         //ContextWrapper temp=new ContextWrapper(context);
+        sharedPreferences=parsehelp.getInstance().getSharedPreferences("MyPREFERENCES", Context.MODE_PRIVATE);
+
         super.onReceive(context, intent);
         String action = intent.getAction();
         View view=null;
@@ -121,7 +128,10 @@ public class AppWidget1 extends AppWidgetProvider implements SensorEventListener
         if (Play.equals(action)) play(view,context);
         else if (Prev.equals(action)) prev(view,context);
         else if (Next.equals(action)) next(view,context);
-        else if(SensorTrigger.equals(action)){sm=(SensorManager)context.getSystemService(SENSOR_SERVICE);sensor_Trigger(sharedPreferences.getBoolean("CurrTrigstate",false));}
+        else if(SensorTrigger.equals(action)
+                ){//sm=(SensorManager)context.getSystemService(SENSOR_SERVICE);
+            sharedPreferences.getBoolean("CurrTrigstate",false);
+            sensor_Trigger(!sharedPreferences.getBoolean("CurrTrigstate",false));}
 
 //updateAppWidget(c,awm,I[0]);
     }
@@ -134,10 +144,14 @@ public class AppWidget1 extends AppWidgetProvider implements SensorEventListener
         //flag=0;
        // SensorEvent event=null;
         //onSensorChanged(event);
-        Log.d("onEnabled","context saved in c");
+        sharedPreferences=parsehelp.getInstance().getSharedPreferences("MyPREFERENCES", Context.MODE_PRIVATE);
+       // Log.d("onEnabled","context saved in c");
         edit=sharedPreferences.edit();
         edit.putBoolean("CurrTrigstate",false);
-        edit.commit();
+          edit.commit();
+        sharedPreferences.getBoolean("CurrTrigstate",false);
+        Log.d("onEnabled","shared preference saved");
+
 /*      c
 
         sm=(SensorManager)context.getSystemService(SENSOR_SERVICE);
@@ -152,40 +166,45 @@ public class AppWidget1 extends AppWidgetProvider implements SensorEventListener
     }
 
     public void sensor_Trigger (boolean set)//true sets acclrometr and proximity on and opp on false
-    {Log.d("Sensor switch","Started ");
+    {Log.d("Sensor switch trigger"," fn Started ");
         edit.remove("CurrTrigstate");
         edit.putBoolean("CurrTrigstate",set);
         edit.commit();
       //  else
         //c=get
+        if(set)sm=(SensorManager)parsehelp.getInstance().getSystemService(SENSOR_SERVICE);
 
-try{
-
-
-    proxSensor=sm.getDefaultSensor(Sensor.TYPE_PROXIMITY);
-    Log.d("Set sensor",proxSensor.getName().toString());
-
-    acc=sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-    Log.d("Set sensor",acc.getName().toString());
-    Log.d("Pox check", proxSensor.getName().toString());
-    Log.d("acc check", acc.getName().toString());
-}catch (Exception e){
-    Log.d("error",e.toString());
-    return;
-
-}
 
         if(set)
         {//button=(ImageButton)findViewById(R.id.trigger);
+            try{
+
+
+                proxSensor=sm.getDefaultSensor(Sensor.TYPE_PROXIMITY);
+                Log.d("Set sensor",proxSensor.getName().toString());
+
+                acc=sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+                Log.d("Set sensor",acc.getName().toString());
+                Log.d("Pox check", proxSensor.getName().toString());
+                Log.d("acc check", acc.getName().toString());
+            }catch (Exception e){
+                Log.d("error",e.toString());
+                return;
+
+            }
             proxSensor.getName();
+
             sm.registerListener(this , proxSensor, SensorManager.SENSOR_DELAY_NORMAL);
             sm.registerListener(this, acc, SensorManager.SENSOR_DELAY_NORMAL);
             Log.d("Sensor switch","Started");
         }
 
         else{
-            sm.unregisterListener(this, proxSensor);
-            sm.unregisterListener(this, acc);
+            sm.unregisterListener(this);
+            //sm.unregisterListener(this);
+            //sm.unregisterListener(this, proxSensor|acc);
+
+            //parsehelp.getInstance().u
             Log.d("Sensor switch","stopped");
         }
         CurrTrigstate=set;
@@ -296,13 +315,14 @@ try{
     @Override
     public void onSensorChanged(SensorEvent event) {
 
-        if(flag==0)
-        Log.d("onSensorChanged",event.toString());
+       // if(flag==0)
+       // Log.d("onSensorChanged",event.toString());
         View view2 = null;
-        RemoteViews views= new RemoteViews("com.apperture.shaketunes", R.layout.app_widget1);
+
+        //RemoteViews views= new RemoteViews("com.apperture.shaketunes", R.layout.app_widget1);
 Context temp;
         temp=parsehelp.getInstance();
-        if (event.sensor.getName().toString().contains("Acc")) {/*
+       if(sharedPreferences.getBoolean("CurrTrigstate",true)) if (event.sensor.getName().toString().contains("Acc")) {/*
             if (event.values[0] * event.values[0] + event.values[1] * event.values[1] + event.values[2] * event.values[2] > 125) {
                 if (event.values[0] < -3) {
                     next(view2, temp);
@@ -314,23 +334,81 @@ Context temp;
 
             }*/
 
-            final float alpha = 8/10;
+            //final float alpha = 8/10;
+            double x = event.values[0];
+            double y = event.values[1];
+            double z = event.values[2];
+            final double alpha = 0.8; // constant for our filter below
 
+            double[] gravity = {0,0,0};
+
+            // Isolate the force of gravity with the low-pass filter.
             gravity[0] = alpha * gravity[0] + (1 - alpha) * event.values[0];
             gravity[1] = alpha * gravity[1] + (1 - alpha) * event.values[1];
             gravity[2] = alpha * gravity[2] + (1 - alpha) * event.values[2];
 
-            linear_acceleration[0] = event.values[0] - gravity[0];
-            linear_acceleration[1] = event.values[1] - gravity[1];
-            linear_acceleration[2] = event.values[2] - gravity[2];
+// Remove the gravity contribution with the high-pass filter.
+            x = event.values[0] - gravity[0];
+            y = event.values[1] - gravity[1];
+            z = event.values[2] - gravity[2];
 
-            Log.d("Linear Acc",Float.toString(linear_acceleration[0])+" "+Float.toString(linear_acceleration[0])+" "+Float.toString(linear_acceleration[0]));
 
-        } else {
+            if (!mInitialized) {
+                // sensor is used for the first time, initialize the last read values
+                mLastX = x;
+                mLastY = y;
+                mLastZ = z;
+                mInitialized = true;
+            } else {
+                // sensor is already initialized, and we have previously read values.
+                // take difference of past and current values and decide which
+                // axis acceleration was detected by comparing values
+
+                double deltaX =(mLastX - x);
+                double deltaY =(mLastY - y);
+                double deltaZ = (mLastZ - z);
+                if ( Math.abs(deltaX) < NOISE)
+                    deltaX = (float) 0.0;
+                if ( Math.abs(deltaY) < NOISE)
+                    deltaY = (float) 0.0;
+                if ( Math.abs(deltaZ) < NOISE)
+                    deltaZ = (float) 0.0;
+                mLastX = x;
+                mLastY = y;
+                mLastZ = z;
+
+                if (deltaX > deltaY) {
+                    Log.d("Acc","Hor");
+                    if(deltaX<0) Log.d("Acc","next");
+                    else  Log.d("Acc","prev");
+                    // do something here if you like
+
+                } else if (deltaY > deltaX) {
+                    // Vertical shake
+                    Log.d("Acc","ver");
+                    // do something here if you like
+
+                } else if ((deltaZ > deltaX) && (deltaZ > deltaY)) {
+                    // Z shake
+                    Log.d("Acc","z");
+
+                    }
+                 else {
+                    // no shake detected
+                }
+            }
+
+            //Log.d("Linear Acc",Double.toString(x)+" "+Double.toString(y)+" "+Double.toString(z));
+        }
+
+
+         else {
             if (event.values[0] == 0)
                 play(view2, temp);
             SystemClock.sleep(25);
         }
+
+       // else Log.d("listner"," called");
     }/*
         try{Text1.setText(event.sensor.getName().toString());
             Text2.setText("X: "+String.valueOf(event.values[0])+
