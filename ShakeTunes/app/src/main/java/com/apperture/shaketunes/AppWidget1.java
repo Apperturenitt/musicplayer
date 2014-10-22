@@ -32,10 +32,10 @@ import static android.content.Context.*;
  * App Widget Configuration implemented in {@link AppWidget1ConfigureActivity AppWidget1ConfigureActivity}
  */
 public class AppWidget1 extends AppWidgetProvider implements SensorEventListener {
-    SensorManager sm;
-    SensorEventListener sel;
+    //public static  SensorManager sm;
+   // SensorEventListener sel;
 
-    ImageButton button;
+   // ImageButton button;
     boolean CurrTrigstate=false;
     static Sensor proxSensor,acc;
     public static SharedPreferences.Editor edit;
@@ -167,13 +167,18 @@ public class AppWidget1 extends AppWidgetProvider implements SensorEventListener
 
     public void sensor_Trigger (boolean set)//true sets acclrometr and proximity on and opp on false
     {Log.d("Sensor switch trigger"," fn Started ");
+        SensorManager sm,prevsm=null;
+        sharedPreferences=parsehelp.getInstance().getSharedPreferences("MyPREFERENCES", Context.MODE_PRIVATE);
+        edit=sharedPreferences.edit();
         edit.remove("CurrTrigstate");
         edit.putBoolean("CurrTrigstate",set);
         edit.commit();
+
       //  else
         //c=get
-        if(set)sm=(SensorManager)parsehelp.getInstance().getSystemService(SENSOR_SERVICE);
 
+       sm=(SensorManager)parsehelp.getInstance().getSystemService(SENSOR_SERVICE);
+       // if(sm==null)sm=(SensorManager)parsehelp.getInstance().getSystemService(SENSOR_SERVICE);
 
         if(set)
         {//button=(ImageButton)findViewById(R.id.trigger);
@@ -195,12 +200,14 @@ public class AppWidget1 extends AppWidgetProvider implements SensorEventListener
             proxSensor.getName();
 
             sm.registerListener(this , proxSensor, SensorManager.SENSOR_DELAY_NORMAL);
+            Log.d("Sensor switch",sm.toString());
             sm.registerListener(this, acc, SensorManager.SENSOR_DELAY_NORMAL);
             Log.d("Sensor switch","Started");
         }
 
         else{
             sm.unregisterListener(this);
+            Log.d("Sensor switch",sm.toString());
             //sm.unregisterListener(this);
             //sm.unregisterListener(this, proxSensor|acc);
 
